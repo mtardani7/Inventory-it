@@ -23,7 +23,13 @@ export const productSchema = z.object({
       message: "Tahun harus 4 digit, contoh 2024.",
     }
   ),
-  usage_date: nullableText(),
+  // usage_date should be an ISO date (YYYY-MM-DD) or empty
+  usage_date: emptyToNull.refine(
+    (value) => value === null || /^\d{4}-\d{2}-\d{2}$/.test(value),
+    {
+      message: "Tanggal harus dalam format YYYY-MM-DD (gunakan pemilih tanggal).",
+    }
+  ),
   pengguna: nullableText(),
   computer_name: nullableText(),
   plant: nullableText(),

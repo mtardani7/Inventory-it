@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    // Using Eloquent Product model for DB-backed operations
+
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -18,10 +20,29 @@ class ProductController extends Controller
             'search' => ['nullable', 'string', 'max:191'],
             'plant' => ['nullable', 'string', 'max:191'],
             'status' => ['nullable', 'string', 'max:191'],
+            'sort' => ['nullable', 'string', 'max:191'],
+            'order' => ['nullable', 'string', 'in:asc,desc'],
         ]);
 
         $perPage = (int) ($validated['per_page'] ?? 10);
         $search = $validated['search'] ?? null;
+        $sort = $validated['sort'] ?? null;
+        $order = $validated['order'] ?? 'desc';
+        $allowedSorts = [
+            'id',
+            'no_asset',
+            'no_serial',
+            'no_equipment',
+            'tipe',
+            'tahun_pembuatan',
+            'usage_date',
+            'pengguna',
+            'computer_name',
+            'plant',
+            'usage_record',
+            'keterangan',
+            'status',
+        ];
 
         $products = Product::query()
             ->when($search, function ($query, string $search): void {
@@ -44,7 +65,11 @@ class ProductController extends Controller
             ->when($validated['status'] ?? null, function ($query, string $status): void {
                 $query->where('status', $status);
             })
-            ->latest('id')
+            ->when(in_array($sort, $allowedSorts, true), function ($query) use ($sort, $order): void {
+                $query->orderBy($sort, $order);
+            }, function ($query): void {
+                $query->latest('id');
+            })
             ->paginate($perPage)
             ->withQueryString();
 
@@ -63,7 +88,10 @@ class ProductController extends Controller
 
     public function show(Product $product): JsonResponse
     {
-        return response()->json($product);
+        return response()->json([
+            'message' => 'Asset berhasil dimuat.',
+            'data' => $product,
+        ]);
     }
 
     public function update(ProductRequest $request, Product $product): JsonResponse

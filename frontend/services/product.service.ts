@@ -8,6 +8,8 @@ export interface ProductParams {
   search?: string;
   plant?: string;
   status?: string;
+  sort?: string;
+  order?: "asc" | "desc";
 }
 
 export interface ProductResponse {
@@ -25,9 +27,9 @@ export const ProductService = {
   },
 
   async getProduct(id: number) {
-    const { data } = await api.get<Product>(`/products/${id}`);
+    const { data } = await api.get<ProductResponse>(`/products/${id}`);
 
-    return data;
+    return data.data;
   },
 
   async createProduct(payload: ProductPayload) {

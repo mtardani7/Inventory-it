@@ -31,8 +31,30 @@ class ProductRequest extends FormRequest
         $normalized = [];
 
         foreach ($nullableFields as $field) {
-            if ($this->has($field) && $this->input($field) === '') {
+            if (! $this->has($field)) {
+                continue;
+            }
+
+            $value = $this->input($field);
+
+            if ($value === '') {
                 $normalized[$field] = null;
+                continue;
+            }
+
+            // Trim string inputs to avoid accidental whitespace-only values
+            if (is_string($value)) {
+                $normalized[$field] = trim($value);
+            }
+        }
+
+        // If `tahun_pembuatan` is provided as a 4-digit year, convert to a
+        // DB-compatible date (use January 1st of that year) because the
+        // database column expects a date-like value.
+        if ($this->has('tahun_pembuatan')) {
+            $yearVal = $this->input('tahun_pembuatan');
+            if (is_string($yearVal) && preg_match('/^\d{4}$/', $yearVal)) {
+                $normalized['tahun_pembuatan'] = $yearVal . '-01-01';
             }
         }
 
@@ -56,13 +78,17 @@ class ProductRequest extends FormRequest
             'no_serial' => ['nullable', 'string', 'max:191'],
             'no_equipment' => ['nullable', 'string', 'max:191'],
             'tipe' => ['nullable', 'string', 'max:191'],
-            'tahun_pembuatan' => ['nullable', 'integer', 'digits:4'],
-            'usage_date' => ['nullable', 'string', 'max:191'],
+            // Accept a date; we convert 4-digit years to YYYY-01-01 in
+            // `prepareForValidation` so the DB accepts it.
+            'tahun_pembuatan' => ['nullable', 'date'],
+            // usage_date is varchar(255 in DB) — allow longer strings
+            'usage_date' => ['nullable', 'string', 'max:255'],
             'pengguna' => ['nullable', 'string', 'max:191'],
             'computer_name' => ['nullable', 'string', 'max:191'],
             'plant' => ['nullable', 'string', 'max:191'],
             'usage_record' => ['nullable', 'string', 'max:500'],
-            'keterangan' => ['nullable', 'string', 'max:1000'],
+            // `keterangan` is text in DB, allow longer content without strict max
+            'keterangan' => ['nullable', 'string'],
             'status' => $statusRule,
         ];
     }

@@ -125,8 +125,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   html {
     @apply font-sans;
+  }
+  button, a, input, select, textarea {
+    touch-action: manipulation;
   }
 }

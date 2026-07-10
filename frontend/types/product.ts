@@ -41,13 +41,13 @@ export interface ProductPayload {
 }
 
 export const PRODUCT_PLANT_OPTIONS = [
-  "Plant 1",
-  "Plant 2",
-  "Plant 3",
-  "Plant 4",
-  "Plant 5",
-  "Plant 7",
-  "Plant 8",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "7",
+  "8",
   "JDO",
   "Kimpai",
 ] as const;

@@ -14,6 +14,7 @@ interface InventoryColumnHandlers {
   onEdit: (product: Product) => void;
   onDisposal: (product: Product) => void;
   onDelete: (product: Product) => void;
+  onSortChange: (field: string, order: "asc" | "desc") => void;
 }
 
 const columnHelper = createColumnHelper<Product>();
@@ -24,11 +25,17 @@ export function createInventoryColumns({
   onDisposal,
   onEdit,
   onView,
+  onSortChange,
 }: InventoryColumnHandlers) {
   return [
     columnHelper.accessor("no_asset", {
       header: ({ column }) => (
-        <SortButton label="No Asset" onClick={() => column.toggleSorting()} />
+        <SortButton
+          label="No Asset"
+          onClick={() =>
+            onSortChange(column.id, column.getIsSorted() === "asc" ? "desc" : "asc")
+          }
+        />
       ),
       cell: ({ getValue }) => <StrongValue value={getValue()} />,
     }),
@@ -42,7 +49,12 @@ export function createInventoryColumns({
     }),
     columnHelper.accessor("tipe", {
       header: ({ column }) => (
-        <SortButton label="Tipe" onClick={() => column.toggleSorting()} />
+        <SortButton
+          label="Tipe"
+          onClick={() =>
+            onSortChange(column.id, column.getIsSorted() === "asc" ? "desc" : "asc")
+          }
+        />
       ),
       cell: ({ getValue }) => <MutedValue value={getValue()} />,
     }),
@@ -60,11 +72,33 @@ export function createInventoryColumns({
     }),
     columnHelper.accessor("usage_date", {
       header: "Usage Date",
-      cell: ({ getValue }) => <MutedValue value={getValue()} />,
+      cell: ({ getValue }) => {
+        const v = getValue() as string | null;
+        if (typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+          try {
+            const d = new Date(v);
+            const formatted = new Intl.DateTimeFormat("id-ID", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            }).format(d);
+            return <MutedValue value={formatted} />;
+          } catch (e) {
+            return <MutedValue value={v} />;
+          }
+        }
+
+        return <MutedValue value={v} />;
+      },
     }),
     columnHelper.accessor("tahun_pembuatan", {
       header: ({ column }) => (
-        <SortButton label="Tahun" onClick={() => column.toggleSorting()} />
+        <SortButton
+          label="Tahun"
+          onClick={() =>
+            onSortChange(column.id, column.getIsSorted() === "asc" ? "desc" : "asc")
+          }
+        />
       ),
       cell: ({ getValue }) => <MutedValue value={getValue()} />,
     }),
@@ -137,3 +171,17 @@ function StatusBadge({ status }: { status: string }) {
     </Badge>
   );
 }
+
+export const INVENTORY_COLUMN_META = [
+  { id: "no_asset", label: "No Asset", defaultVisible: true },
+  { id: "no_serial", label: "Serial Number", defaultVisible: true },
+  { id: "no_equipment", label: "Equipment", defaultVisible: true },
+  { id: "tipe", label: "Tipe", defaultVisible: true },
+  { id: "computer_name", label: "Computer", defaultVisible: true },
+  { id: "pengguna", label: "Pengguna", defaultVisible: true },
+  { id: "plant", label: "Plant", defaultVisible: true },
+  { id: "usage_date", label: "Usage Date", defaultVisible: true },
+  { id: "tahun_pembuatan", label: "Tahun", defaultVisible: true },
+  { id: "status", label: "Status", defaultVisible: true },
+  { id: "actions", label: "Aksi", defaultVisible: true },
+];

@@ -69,8 +69,15 @@ function toFormValues(product?: Product | null): ProductFormValues {
     no_asset: product.no_asset ?? "",
     no_equipment: product.no_equipment ?? "",
     tipe: product.tipe ?? "",
-    tahun_pembuatan: product.tahun_pembuatan ?? "",
-    usage_date: product.usage_date ?? "",
+    // If tahun_pembuatan stored as YYYY-MM-DD (from backend conversion), extract year
+    tahun_pembuatan:
+      product.tahun_pembuatan && /^\d{4}-\d{2}-\d{2}$/.test(product.tahun_pembuatan)
+        ? product.tahun_pembuatan.split("-")[0]
+        : product.tahun_pembuatan ?? "",
+    // Only present usage_date if it's an ISO date string (YYYY-MM-DD)
+    usage_date: product.usage_date && /^\d{4}-\d{2}-\d{2}$/.test(product.usage_date)
+      ? product.usage_date
+      : "",
     pengguna: product.pengguna ?? "",
     computer_name: product.computer_name ?? "",
     plant: product.plant ?? "",
@@ -108,8 +115,10 @@ export function InventoryDialog({
   onSubmit,
 }: InventoryDialogProps) {
   const isView = mode === "view";
+  const isFieldDisabled = isView || isSubmitting;
   const title =
     mode === "create" ? "Tambah Asset" : mode === "edit" ? "Edit Asset" : "Detail Asset";
+  const submitLabel = mode === "create" ? "Simpan" : "Perbarui";
 
   const {
     formState: { errors },
@@ -130,6 +139,10 @@ export function InventoryDialog({
   }, [open, product, reset]);
 
   async function submit(values: ProductValidatedValues) {
+    if (isView) {
+      return;
+    }
+
     await onSubmit(toPayload(values));
   }
 
@@ -139,7 +152,7 @@ export function InventoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-4xl">
+      <DialogContent className="max-h-[95dvh] w-[calc(100%-1rem)] overflow-y-auto rounded-2xl p-3 sm:max-w-4xl sm:p-4">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -149,48 +162,62 @@ export function InventoryDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-5" onSubmit={handleSubmit(submit)}>
+        <form
+          className="space-y-5"
+          onSubmit={isView ? (event) => event.preventDefault() : handleSubmit(submit)}
+        >
           <div className="grid gap-4 md:grid-cols-2">
             <FormField label="No Asset" error={errors.no_asset?.message}>
-              <Input disabled={isView || isSubmitting} {...register("no_asset")} />
+              <Input disabled={isFieldDisabled} readOnly={isView} {...register("no_asset")} />
             </FormField>
 
             <FormField label="Serial Number" error={errors.no_serial?.message}>
-              <Input disabled={isView || isSubmitting} {...register("no_serial")} />
+              <Input disabled={isFieldDisabled} readOnly={isView} {...register("no_serial")} />
             </FormField>
 
             <FormField label="No Equipment" error={errors.no_equipment?.message}>
-              <Input disabled={isView || isSubmitting} {...register("no_equipment")} />
+              <Input disabled={isFieldDisabled} readOnly={isView} {...register("no_equipment")} />
             </FormField>
 
             <FormField label="Tipe" error={errors.tipe?.message}>
-              <Input disabled={isView || isSubmitting} {...register("tipe")} />
+              <Input disabled={isFieldDisabled} readOnly={isView} {...register("tipe")} />
             </FormField>
 
             <FormField label="Tahun Pembuatan" error={errors.tahun_pembuatan?.message}>
-              <Input
-                disabled={isView || isSubmitting}
-                inputMode="numeric"
-                maxLength={4}
-                placeholder="2024"
-                {...register("tahun_pembuatan")}
-              />
+              <>
+                <Input
+                  disabled={isFieldDisabled}
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="2024"
+                  min={1900}
+                  max={new Date().getFullYear()}
+                  readOnly={isView}
+                  {...register("tahun_pembuatan")}
+                />
+                <span className="text-xs text-muted-foreground">Masukkan tahun (YYYY), contohnya 2024.</span>
+              </>
             </FormField>
 
             <FormField label="Usage Date" error={errors.usage_date?.message}>
-              <Input
-                disabled={isView || isSubmitting}
-                placeholder="Contoh: 10 Bulan, 11 Hari"
-                {...register("usage_date")}
-              />
+              <>
+                <Input
+                  disabled={isFieldDisabled}
+                  type="date"
+                  placeholder="Pilih tanggal"
+                  readOnly={isView}
+                  {...register("usage_date")}
+                />
+                <span className="text-xs text-muted-foreground">Pilih tanggal penggunaan dari kalender.</span>
+              </>
             </FormField>
 
             <FormField label="Pengguna" error={errors.pengguna?.message}>
-              <Input disabled={isView || isSubmitting} {...register("pengguna")} />
+              <Input disabled={isFieldDisabled} readOnly={isView} {...register("pengguna")} />
             </FormField>
 
             <FormField label="Computer Name" error={errors.computer_name?.message}>
-              <Input disabled={isView || isSubmitting} {...register("computer_name")} />
+              <Input disabled={isFieldDisabled} readOnly={isView} {...register("computer_name")} />
             </FormField>
 
             <FormField label="Plant" error={errors.plant?.message}>
@@ -202,7 +229,7 @@ export function InventoryDialog({
                     shouldValidate: true,
                   })
                 }
-                disabled={isView || isSubmitting}
+                disabled={isFieldDisabled}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Pilih plant" />
@@ -226,7 +253,7 @@ export function InventoryDialog({
                     shouldValidate: true,
                   })
                 }
-                disabled={isView || isSubmitting}
+                disabled={isFieldDisabled}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Pilih status" />
@@ -244,15 +271,15 @@ export function InventoryDialog({
 
           <div className="grid gap-4 md:grid-cols-2">
             <FormField label="Usage Record" error={errors.usage_record?.message}>
-              <Textarea disabled={isView || isSubmitting} {...register("usage_record")} />
+              <Textarea disabled={isFieldDisabled} readOnly={isView} {...register("usage_record")} />
             </FormField>
 
             <FormField label="Keterangan" error={errors.keterangan?.message}>
-              <Textarea disabled={isView || isSubmitting} {...register("keterangan")} />
+              <Textarea disabled={isFieldDisabled} readOnly={isView} {...register("keterangan")} />
             </FormField>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:justify-end">
             <Button
               type="button"
               variant="outline"
@@ -271,7 +298,7 @@ export function InventoryDialog({
                 ) : (
                   <Save />
                 )}
-                Simpan
+                {submitLabel}
               </Button>
             )}
           </DialogFooter>

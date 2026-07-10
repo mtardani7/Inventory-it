@@ -15,6 +15,12 @@ export function useProducts(params: ProductParams) {
   return useQuery({
     queryKey: productKeys.list(params),
     queryFn: () => ProductService.getProducts(params),
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    placeholderData: (previousData) => previousData,
+    structuralSharing: true,
   });
 }
 
@@ -23,6 +29,12 @@ export function useProduct(id: number, enabled = true) {
     queryKey: productKeys.detail(id),
     queryFn: () => ProductService.getProduct(id),
     enabled,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    placeholderData: (previousData) => previousData,
+    structuralSharing: true,
   });
 }
 
