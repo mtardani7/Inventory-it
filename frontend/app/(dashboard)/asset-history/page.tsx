@@ -86,7 +86,7 @@ export default function AssetHistoryPage() {
           <Select
             value={action}
             onValueChange={(value) => {
-              setAction(value);
+              setAction(value ?? "all");
               setPage(1);
             }}
           >
@@ -104,7 +104,7 @@ export default function AssetHistoryPage() {
           <Select
             value={userId}
             onValueChange={(value) => {
-              setUserId(value);
+              setUserId(value ?? "all");
               setPage(1);
             }}
           >

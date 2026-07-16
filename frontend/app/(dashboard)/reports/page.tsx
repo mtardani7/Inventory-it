@@ -109,7 +109,7 @@ export default function ReportsPage() {
             className="lg:col-span-2"
           />
 
-          <Select value={plant} onValueChange={setPlant}>
+          <Select value={plant} onValueChange={(value) => setPlant(value ?? "all")}>
             <SelectTrigger>
               <SelectValue placeholder="Plant" />
             </SelectTrigger>
@@ -121,7 +121,7 @@ export default function ReportsPage() {
             </SelectContent>
           </Select>
 
-          <Select value={status} onValueChange={setStatus}>
+          <Select value={status} onValueChange={(value) => setStatus(value ?? "all")}>
             <SelectTrigger>
               <SelectValue placeholder="Status" />
             </SelectTrigger>

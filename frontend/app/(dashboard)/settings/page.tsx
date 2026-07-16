@@ -126,7 +126,13 @@ export default function SettingsPage() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <p className="text-sm font-medium">Default Theme</p>
-              <Select value={form.default_theme} onValueChange={(value: "light" | "dark" | "system") => setDraftForm((prev) => ({ ...prev, default_theme: value }))}>
+              <Select
+                value={form.default_theme}
+                onValueChange={(value: "light" | "dark" | "system" | null, _eventDetails) => {
+                  if (!value) return;
+                  setDraftForm((prev) => ({ ...prev, default_theme: value }));
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih theme" />
                 </SelectTrigger>
@@ -140,12 +146,18 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <p className="text-sm font-medium">Default Language</p>
-              <Select value={form.default_language} onValueChange={(value: "id" | "en") => setDraftForm((prev) => ({ ...prev, default_language: value }))}>
+              <Select
+                value={form.default_language}
+                onValueChange={(value: "id" | "en" | null, _eventDetails) => {
+                  if (!value) return;
+                  setDraftForm((prev) => ({ ...prev, default_language: value }));
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih language" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="id">Bahasa Indonesia</SelectItem>
+                  <SelectItem value="id">Indonesia</SelectItem>
                   <SelectItem value="en">English</SelectItem>
                 </SelectContent>
               </Select>
