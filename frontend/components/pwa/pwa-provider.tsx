@@ -15,8 +15,13 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installable, setInstallable] = useState(false);
   const isOnline = useOnlineStatus();
+  const isProduction = process.env.NODE_ENV === "production";
 
   useEffect(() => {
+    if (!isProduction || typeof window === "undefined") {
+      return;
+    }
+
     const handler = (event: Event) => {
       event.preventDefault();
       setInstallPrompt(event as BeforeInstallPromptEvent);
@@ -29,6 +34,15 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
+        const swResponse = await fetch("/sw.js", {
+          method: "HEAD",
+          cache: "no-store",
+        });
+
+        if (!swResponse.ok) {
+          return;
+        }
+
         await navigator.serviceWorker.register("/sw.js", { scope: "/" });
       } catch (error) {
         console.warn("Service worker registration failed", error);
@@ -38,7 +52,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     void registerServiceWorker();
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
+  }, [isProduction]);
 
   return (
     <>
@@ -60,7 +74,14 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
               <p className="text-xs text-muted-foreground">Akses cepat dari layar utama.</p>
             </div>
           </div>
-          <Button size="sm" onClick={() => installPrompt.prompt()}>
+          <Button
+            size="sm"
+            onClick={async () => {
+              await installPrompt.prompt();
+              setInstallPrompt(null);
+              setInstallable(false);
+            }}
+          >
             Pasang
           </Button>
         </div>

@@ -108,3 +108,40 @@ export function useDisposeProduct() {
     },
   });
 }
+
+export function useImportProducts() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      file,
+      onUploadProgress,
+    }: {
+      file: File;
+      onUploadProgress?: (progress: number) => void;
+    }) => ProductService.importProducts(file, onUploadProgress),
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: productKeys.lists(),
+      });
+    },
+  });
+}
+
+export function useExportTemplateExcel() {
+  return useMutation({
+    mutationFn: () => ProductService.exportTemplateExcel(),
+  });
+}
+
+export function useExportProductsExcel() {
+  return useMutation({
+    mutationFn: (params: ProductParams) => ProductService.exportProductsExcel(params),
+  });
+}
+
+export function useExportProductsPdf() {
+  return useMutation({
+    mutationFn: (params: ProductParams) => ProductService.exportProductsPdf(params),
+  });
+}

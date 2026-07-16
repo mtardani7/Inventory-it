@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutGrid, Package, Trash2, BarChart3, Settings } from "lucide-react";
+import { LayoutGrid, Package, Trash2, BarChart3, Settings, History } from "lucide-react";
 
 const items = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { href: "/inventory", label: "Inventory", icon: Package },
+  { href: "/asset-history", label: "Asset History", icon: History },
   { href: "/disposal", label: "Disposal", icon: Trash2 },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },

@@ -12,8 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // API ini menggunakan Bearer token, bukan Sanctum SPA cookie auth.
+        // Menonaktifkan stateful middleware mencegah validasi CSRF yang memicu 419.
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();

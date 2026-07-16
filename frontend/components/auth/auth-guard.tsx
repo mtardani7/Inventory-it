@@ -2,36 +2,60 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
-import { useAuth } from "@/lib/auth";
+import { useAuthContext } from "@/providers/auth-provider";
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, hydrated } = useAuth();
+const PUBLIC_ROUTES = [
+  "/login",
+  "/register",
+  "/forgot-password",
+];
+
+export function AuthGuard({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const {
+    user,
+    isAuthenticated,
+    isLoading,
+  } = useAuthContext();
+
   useEffect(() => {
-    if (!hydrated) {
-      return;
-    }
+    if (isLoading) return;
 
-    const isAuthRoute = pathname === "/login";
+    const isPublic = PUBLIC_ROUTES.includes(pathname);
 
-    if (!isAuthenticated && !isAuthRoute) {
+    if (!isAuthenticated && !isPublic) {
       router.replace("/login");
       return;
     }
 
-    if (isAuthenticated && isAuthRoute) {
+    if (isAuthenticated && pathname === "/login") {
       router.replace("/dashboard");
     }
-  }, [hydrated, isAuthenticated, pathname, router]);
+  }, [isAuthenticated, isLoading, pathname, router]);
 
-  if (!hydrated) {
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const isPublic = PUBLIC_ROUTES.includes(pathname);
+
+  if (!isAuthenticated && !isPublic) {
     return null;
   }
 
-  if (!isAuthenticated && pathname !== "/login") {
+  if (isAuthenticated && pathname === "/login") {
     return null;
   }
 

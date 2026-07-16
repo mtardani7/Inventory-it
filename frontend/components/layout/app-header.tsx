@@ -8,10 +8,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { useAuth } from "@/lib/auth";
+import { useLogout } from "@/hooks/use-auth";
+import { useAuthContext } from "@/providers/auth-provider";
 
 export function AppHeader() {
-  const { user, logout } = useAuth();
+  const { user } = useAuthContext();
+  const logout = useLogout();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -53,10 +55,14 @@ export function AppHeader() {
           size="sm"
           type="button"
           variant="ghost"
+          disabled={logout.isPending}
           className="h-8 px-2 sm:px-3"
-          onClick={() => {
-            logout();
-            router.replace("/login");
+          onClick={async () => {
+            try {
+              await logout.mutateAsync();
+            } finally {
+              router.replace("/login");
+            }
           }}
         >
           <LogOut className="size-4" />

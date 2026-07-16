@@ -1,38 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
+import { useForm } from "react-hook-form";
 import { Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/lib/auth";
+import { useLogin } from "@/hooks/use-auth";
+import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
+
+type AuthErrorResponse = {
+  message?: string;
+};
 
 export function LoginForm() {
-  const [email, setEmail] = useState("admin@inventory.test");
-  const [password, setPassword] = useState("password123");
-  const [rememberMe, setRememberMe] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
+  const login = useLogin();
   const router = useRouter();
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setLoading(true);
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
+  const onSubmit = async (values: LoginFormValues) => {
     try {
-      if (!email || !password) {
-        throw new Error("Email dan password wajib diisi.");
-      }
-      await login(email, password, rememberMe);
+      await login.mutateAsync(values);
+      toast.success("Login berhasil");
       router.replace("/dashboard");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login gagal.");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      const axiosError = error as AxiosError<AuthErrorResponse>;
+
+      toast.error(
+        axiosError.response?.data?.message ??
+          "Email atau password salah."
+      );
     }
   };
 
@@ -43,38 +55,50 @@ export function LoginForm() {
         <CardDescription>Kelola aset, disposal, dan laporan dengan aman.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {error ? <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</p> : null}
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          {login.isError ? (
+            <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              {(login.error as AxiosError<AuthErrorResponse>)?.response?.data?.message ?? "Login gagal."}
+            </p>
+          ) : null}
 
           <label className="grid gap-2 text-sm">
             <span className="font-medium">Email</span>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input className="pl-9" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@inventory.test" />
+              <Input
+                className="pl-9"
+                type="email"
+                placeholder="admin@inventory.test"
+                autoComplete="email"
+                {...register("email")}
+              />
             </div>
+            {errors.email ? (
+              <p className="text-xs text-destructive">{errors.email.message}</p>
+            ) : null}
           </label>
 
           <label className="grid gap-2 text-sm">
             <span className="font-medium">Password</span>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input className="pl-9" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="password123" />
+              <Input
+                className="pl-9"
+                type="password"
+                placeholder="password123"
+                autoComplete="current-password"
+                {...register("password")}
+              />
             </div>
+            {errors.password ? (
+              <p className="text-xs text-destructive">{errors.password.message}</p>
+            ) : null}
           </label>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input checked={rememberMe} className="size-4" type="checkbox" onChange={(event) => setRememberMe(event.target.checked)} />
-            <span>Remember me</span>
-          </label>
-
-          <Button className="w-full" type="submit" disabled={loading}>
-            {loading ? "Memproses..." : "Masuk"}
+          <Button className="w-full" type="submit" disabled={isSubmitting || login.isPending}>
+            {isSubmitting || login.isPending ? "Memproses..." : "Masuk"}
           </Button>
-
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <button className="hover:text-foreground" type="button">Forgot password?</button>
-            <span>Demo account ready</span>
-          </div>
         </form>
       </CardContent>
     </Card>

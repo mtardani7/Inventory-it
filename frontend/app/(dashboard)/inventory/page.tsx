@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useDeferredValue, useMemo, useState, useEffect } from "react";
 import { AlertCircle, PackageSearch } from "lucide-react";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { InventoryToolbar } from "@/components/inventory/inventory-toolbar";
@@ -11,6 +12,10 @@ import {
   useCreateProduct,
   useDeleteProduct,
   useDisposeProduct,
+  useExportProductsExcel,
+  useExportProductsPdf,
+  useExportTemplateExcel,
+  useImportProducts,
   useProducts,
   useUpdateProduct,
 } from "@/hooks/use-products";
@@ -18,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Product, ProductPayload } from "@/types/product";
 import { INVENTORY_COLUMN_META } from "@/components/inventory/inventory-columns";
 import { ColumnVisibilityMenu } from "@/components/inventory/column-visibility-menu";
+import { ImportProductResponse } from "@/services/product.service";
 
 const InventoryTable = dynamic(
   () => import("@/components/inventory/inventory-table").then((module) => module.InventoryTable),
@@ -61,8 +67,6 @@ export default function InventoryPage() {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [confirmationAction, setConfirmationAction] = useState<ConfirmationAction>(null);
   const [confirmationProduct, setConfirmationProduct] = useState<Product | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
-
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean> | undefined>(() => {
     try {
       const raw = localStorage.getItem("inventory:column_visibility");
@@ -107,12 +111,25 @@ export default function InventoryPage() {
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const disposeProduct = useDisposeProduct();
+  const importProducts = useImportProducts();
+  const exportTemplateExcel = useExportTemplateExcel();
+  const exportProductsExcel = useExportProductsExcel();
+  const exportProductsPdf = useExportProductsPdf();
 
   const isMutating =
     createProduct.isPending ||
     updateProduct.isPending ||
     deleteProduct.isPending ||
-    disposeProduct.isPending;
+    disposeProduct.isPending ||
+    importProducts.isPending;
+
+  const exportingType = exportTemplateExcel.isPending
+    ? "template"
+    : exportProductsExcel.isPending
+      ? "excel"
+      : exportProductsPdf.isPending
+        ? "pdf"
+        : null;
 
   const handleDialogOpenChange = useCallback((open: boolean) => {
     setDialogOpen(open);
@@ -220,123 +237,75 @@ export default function InventoryPage() {
   }, [closeConfirmation, confirmationAction, confirmationProduct, deleteProduct, disposeProduct]
   );
 
-  const handleImportFile = useCallback(async (file: File) => {
-    setIsImporting(true);
-    try {
-      const text = await file.text();
-      const rows = parseCsvRows(text);
-      if (!rows.length) {
-        throw new Error("File kosong atau tidak memiliki data yang valid.");
-      }
+  const handleImportFile = useCallback(async (file: File, onUploadProgress?: (progress: number) => void): Promise<ImportProductResponse> => {
+    const result = await importProducts.mutateAsync({
+      file,
+      onUploadProgress,
+    });
 
-      const headers = rows[0].map((value) => value.trim());
-      const requiredHeaders = ["no_asset", "tipe", "pengguna", "plant", "status"];
-      const missingHeaders = requiredHeaders.filter((header) => !headers.includes(header));
+    await productsQuery.refetch();
 
-      if (missingHeaders.length) {
-        throw new Error(`File tidak sesuai format. Kolom wajib: ${missingHeaders.join(", ")}`);
-      }
-
-      const invalidRows = rows.slice(1).filter((row) => row.some((value) => value.trim()));
-      if (!invalidRows.length) {
-        throw new Error("Tidak ada data asset yang dapat diimpor.");
-      }
-
-      const payloads = invalidRows.map((row) => {
-        const record = Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ""]));
-        return {
-          no_serial: record.no_serial ?? null,
-          no_asset: record.no_asset ?? null,
-          no_equipment: record.no_equipment ?? null,
-          tipe: record.tipe ?? null,
-          tahun_pembuatan: record.tahun_pembuatan ?? null,
-          usage_date: record.usage_date ?? null,
-          pengguna: record.pengguna ?? null,
-          computer_name: record.computer_name ?? null,
-          plant: record.plant ?? null,
-          usage_record: record.usage_record ?? null,
-          keterangan: record.keterangan ?? null,
-          status: normalizeStatus(record.status ?? "Aktif"),
-        } as ProductPayload;
-      });
-
-      for (const payload of payloads) {
-        await createProduct.mutateAsync(payload);
-      }
-
-      toast.success(`${payloads.length} asset berhasil diimpor.`);
-      await productsQuery.refetch();
-    } catch (error) {
-      toast.error(getErrorMessage(error));
-    } finally {
-      setIsImporting(false);
-    }
-  }, [createProduct, productsQuery]);
+    return result;
+  }, [importProducts, productsQuery]);
 
   const handleDownloadTemplate = useCallback(() => {
-    const template = [
-      ["no_asset", "no_serial", "no_equipment", "tipe", "tahun_pembuatan", "usage_date", "pengguna", "computer_name", "plant", "usage_record", "keterangan", "status"],
-      ["A001", "SN001", "EQ001", "Laptop", "2024", "2024-01-15", "Budi", "PC-01", "1", "Aktif", "", "Aktif"],
-    ];
-    downloadFile(toCsv(template), "inventory-template.csv", "text/csv;charset=utf-8;");
-  }, []);
+    void (async () => {
+      try {
+        const response = await exportTemplateExcel.mutateAsync();
+        triggerBlobDownload(
+          response.data,
+          getFilenameFromDisposition(response.headers["content-disposition"], "inventory-template.xlsx")
+        );
+        toast.success("Template Excel berhasil diunduh.");
+      } catch (error) {
+        toast.error(await getDownloadErrorMessage(error));
+      }
+    })();
+  }, [exportTemplateExcel]);
 
   const handleExportExcel = useCallback(() => {
-    const rows = [
-      ["no_asset", "no_serial", "no_equipment", "tipe", "tahun_pembuatan", "usage_date", "pengguna", "computer_name", "plant", "usage_record", "keterangan", "status"],
-      ...productsQuery.data?.data?.map((product) => [
-        product.no_asset ?? "",
-        product.no_serial ?? "",
-        product.no_equipment ?? "",
-        product.tipe ?? "",
-        product.tahun_pembuatan ?? "",
-        product.usage_date ?? "",
-        product.pengguna ?? "",
-        product.computer_name ?? "",
-        product.plant ?? "",
-        product.usage_record ?? "",
-        product.keterangan ?? "",
-        product.status ?? "",
-      ]) ?? [],
-    ];
-    downloadFile(toCsv(rows), "inventory-export.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  }, [productsQuery.data?.data]);
+    void (async () => {
+      try {
+        const response = await exportProductsExcel.mutateAsync({
+          search: deferredSearch || undefined,
+          plant: plant === "all" ? undefined : plant,
+          status: status === "all" ? undefined : status,
+          sort: sortField === "id" ? undefined : sortField,
+          order: sortField === "id" ? undefined : sortOrder,
+        });
 
-  const handleExportCsv = useCallback(() => {
-    const rows = [
-      ["no_asset", "no_serial", "no_equipment", "tipe", "tahun_pembuatan", "usage_date", "pengguna", "computer_name", "plant", "usage_record", "keterangan", "status"],
-      ...productsQuery.data?.data?.map((product) => [
-        product.no_asset ?? "",
-        product.no_serial ?? "",
-        product.no_equipment ?? "",
-        product.tipe ?? "",
-        product.tahun_pembuatan ?? "",
-        product.usage_date ?? "",
-        product.pengguna ?? "",
-        product.computer_name ?? "",
-        product.plant ?? "",
-        product.usage_record ?? "",
-        product.keterangan ?? "",
-        product.status ?? "",
-      ]) ?? [],
-    ];
-    downloadFile(toCsv(rows), "inventory-export.csv", "text/csv;charset=utf-8;");
-  }, [productsQuery.data?.data]);
+        triggerBlobDownload(
+          response.data,
+          getFilenameFromDisposition(response.headers["content-disposition"], "inventory-export.xlsx")
+        );
+        toast.success("Export Excel berhasil.");
+      } catch (error) {
+        toast.error(await getDownloadErrorMessage(error));
+      }
+    })();
+  }, [deferredSearch, exportProductsExcel, plant, sortField, sortOrder, status]);
 
   const handleExportPdf = useCallback(() => {
-    const rows = productsQuery.data?.data ?? [];
-    const content = rows.length
-      ? rows.map((product) => `${product.no_asset || "-"} | ${product.tipe || "-"} | ${product.pengguna || "-"} | ${product.plant || "-"} | ${product.status || "-"}`).join("\n")
-      : "Tidak ada data asset.";
-    const pdfContent = `<!doctype html><html><body><h1>Inventory Export</h1><pre>${escapeHtml(content)}</pre></body></html>`;
-    const blob = new Blob([pdfContent], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "inventory-export.pdf";
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [productsQuery.data?.data]);
+    void (async () => {
+      try {
+        const response = await exportProductsPdf.mutateAsync({
+          search: deferredSearch || undefined,
+          plant: plant === "all" ? undefined : plant,
+          status: status === "all" ? undefined : status,
+          sort: sortField === "id" ? undefined : sortField,
+          order: sortField === "id" ? undefined : sortOrder,
+        });
+
+        triggerBlobDownload(
+          response.data,
+          getFilenameFromDisposition(response.headers["content-disposition"], "inventory-export.pdf")
+        );
+        toast.success("Export PDF berhasil.");
+      } catch (error) {
+        toast.error(await getDownloadErrorMessage(error));
+      }
+    })();
+  }, [deferredSearch, exportProductsPdf, plant, sortField, sortOrder, status]);
 
   return (
     <main className="space-y-6 p-4 md:p-6">
@@ -377,11 +346,11 @@ export default function InventoryPage() {
 
       <ImportExportPanel
         totalProducts={productsQuery.data?.total ?? 0}
-        isImporting={isImporting}
+        isImporting={importProducts.isPending}
+        exportingType={exportingType}
         onImportFile={handleImportFile}
         onDownloadTemplate={handleDownloadTemplate}
         onExportExcel={handleExportExcel}
-        onExportCsv={handleExportCsv}
         onExportPdf={handleExportPdf}
       />
 
@@ -504,23 +473,7 @@ function getErrorMessage(error: unknown) {
   return "Terjadi kesalahan. Silakan coba lagi.";
 }
 
-function parseCsvRows(text: string) {
-  const rows = text
-    .split(/\r?\n/)
-    .filter((row) => row.length)
-    .map((row) => row.split(",").map((value) => value.trim()));
-
-  return rows;
-}
-
-function toCsv(rows: Array<Array<string | number | null>>) {
-  return rows
-    .map((row) => row.map((value) => `"${String(value ?? "").replaceAll(/"/g, '""')}"`).join(","))
-    .join("\n");
-}
-
-function downloadFile(content: string, fileName: string, mimeType: string) {
-  const blob = new Blob([content], { type: mimeType });
+function triggerBlobDownload(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -529,18 +482,50 @@ function downloadFile(content: string, fileName: string, mimeType: string) {
   URL.revokeObjectURL(url);
 }
 
-function normalizeStatus(status: string) {
-  const normalized = status?.trim();
-  return normalized === "Disposal" || normalized === "Maintenance" || normalized === "Rusak" || normalized === "Aktif"
-    ? normalized
-    : "Aktif";
+function getFilenameFromDisposition(contentDisposition: string | undefined, fallback: string) {
+  if (!contentDisposition) {
+    return fallback;
+  }
+
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1]);
+  }
+
+  const basicMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+  if (basicMatch?.[1]) {
+    return basicMatch[1];
+  }
+
+  return fallback;
 }
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+async function getDownloadErrorMessage(error: unknown) {
+  if (error instanceof AxiosError) {
+    const status = error.response?.status;
+    const data = error.response?.data;
+
+    if (data instanceof Blob) {
+      const text = await data.text();
+
+      try {
+        const parsed = JSON.parse(text) as { message?: string };
+        if (parsed.message) {
+          return parsed.message;
+        }
+      } catch {
+        // Ignore invalid JSON body.
+      }
+    }
+
+    if (status) {
+      return `Gagal mengunduh file. (${status})`;
+    }
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Gagal mengunduh file.";
 }

@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { AuthGuard } from "@/components/auth/auth-guard";
+
 import Providers from "./providers";
+import { AuthProvider } from "@/providers/auth-provider";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
 export const metadata: Metadata = {
   title: "Inventory IT",
@@ -13,8 +15,14 @@ export const metadata: Metadata = {
     title: "Inventory IT",
   },
   icons: [
-    { rel: "icon", url: "/icon-192.svg" },
-    { rel: "apple-touch-icon", url: "/icon-192.svg" },
+    {
+      rel: "icon",
+      url: "/icon-192.svg",
+    },
+    {
+      rel: "apple-touch-icon",
+      url: "/icon-192.svg",
+    },
   ],
 };
 
@@ -35,7 +43,11 @@ export default function RootLayout({
     <html lang="id" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <Providers>
-          <AuthGuard>{children}</AuthGuard>
+          <AuthProvider>
+            <AuthGuard>
+              {children}
+            </AuthGuard>
+          </AuthProvider>
         </Providers>
       </body>
     </html>

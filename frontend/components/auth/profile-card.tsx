@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { Save } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/lib/auth";
+import { useAuthContext } from "@/providers/auth-provider";
 
 export function ProfileCard() {
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuthContext();
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
 
@@ -34,7 +35,9 @@ export function ProfileCard() {
         </label>
         <Button
           type="button"
-          onClick={() => updateProfile({ name, email })}
+          onClick={() => {
+            toast.info("Update profil belum tersedia dari API.");
+          }}
         >
           <Save className="size-4" />
           Simpan Profil

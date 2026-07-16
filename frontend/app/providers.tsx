@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { queryClient } from "@/lib/query-client";
-import { AuthProvider } from "@/lib/auth";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
 
 export default function Providers({
@@ -15,12 +14,10 @@ export default function Providers({
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <PwaProvider>
-            {children}
-            <Toaster richColors position="top-right" />
-          </PwaProvider>
-        </AuthProvider>
+        <PwaProvider>
+          {children}
+          <Toaster richColors position="top-right" />
+        </PwaProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

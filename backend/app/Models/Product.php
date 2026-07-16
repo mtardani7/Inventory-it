@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -24,4 +25,9 @@ class Product extends Model
     ];
 
     protected $casts = [];
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(AssetHistory::class);
+    }
 }
