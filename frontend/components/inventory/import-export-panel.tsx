@@ -161,59 +161,63 @@ export function ImportExportPanel({
           resetUploadState();
         }
       }}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+        <DialogContent className="w-[calc(100vw-24px)] max-w-[90vw] rounded-xl p-0 sm:w-[90vw] sm:max-w-[90vw] md:w-full md:max-w-[680px] md:min-w-0">
+          <DialogHeader className="flex-none px-6 pt-6 pb-4 pr-12">
             <DialogTitle>Upload File Import</DialogTitle>
             <DialogDescription>
               Drag & drop file Excel/CSV atau pilih file secara manual.
             </DialogDescription>
           </DialogHeader>
 
-          <div
-            className={`rounded-xl border-2 border-dashed p-5 text-center transition-colors ${dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/30"}`}
-            onDragOver={(event) => {
-              event.preventDefault();
-              if (!isImporting) {
-                setDragOver(true);
-              }
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(event) => {
-              event.preventDefault();
-              setDragOver(false);
-              if (isImporting) {
-                return;
-              }
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 pb-6">
+            <div className="space-y-4">
+              <div
+                className={`flex h-[200px] min-h-[180px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 text-center transition-colors ${dragOver ? "border-primary bg-primary/5" : "border-muted-foreground/30 bg-muted/10"}`}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  if (!isImporting) {
+                    setDragOver(true);
+                  }
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  setDragOver(false);
+                  if (isImporting) {
+                    return;
+                  }
 
-              const file = event.dataTransfer.files?.[0];
-              handleFileSelected(file);
-            }}
-          >
-            <p className="text-sm font-medium">Tarik file ke sini</p>
-            <p className="mt-1 text-xs text-muted-foreground">Format: xlsx, xls, csv (maks 10 MB)</p>
-            <Button type="button" variant="outline" className="mt-4" onClick={openPicker} disabled={isImporting}>
-              Pilih File
-            </Button>
-          </div>
-
-          <div className="rounded-lg border bg-muted/20 p-3 text-sm">
-            <p className="font-medium">File dipilih</p>
-            <p className="mt-1 text-muted-foreground">{selectedFile ? `${selectedFile.name} (${Math.ceil(selectedFile.size / 1024)} KB)` : "Belum ada file."}</p>
-          </div>
-
-          {isImporting ? (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Progress upload</span>
-                <span>{progress}%</span>
+                  const file = event.dataTransfer.files?.[0];
+                  handleFileSelected(file);
+                }}
+              >
+                <p className="text-sm font-medium">Tarik file ke sini</p>
+                <p className="mt-2 max-w-md text-xs leading-5 text-muted-foreground">Format: xlsx, xls, csv (maks 10 MB)</p>
+                <Button type="button" variant="outline" className="mt-5" onClick={openPicker} disabled={isImporting}>
+                  Pilih File
+                </Button>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-muted">
-                <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+
+              <div className="min-w-0 rounded-lg border bg-muted/20 p-3 text-sm">
+                <p className="font-medium">File dipilih</p>
+                <p className="mt-1 break-all text-muted-foreground">{selectedFile ? `${selectedFile.name} (${Math.ceil(selectedFile.size / 1024)} KB)` : "Belum ada file."}</p>
               </div>
+
+              {isImporting ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Progress upload</span>
+                    <span>{progress}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+                  </div>
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-none justify-end px-6 py-4">
             <Button type="button" variant="outline" onClick={() => setUploadOpen(false)} disabled={isImporting}>
               Batal
             </Button>

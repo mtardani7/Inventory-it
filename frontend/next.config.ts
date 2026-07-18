@@ -73,7 +73,6 @@ const nextConfig: NextConfig = {
       ];
     }
 
-    // Production tidak perlu rewrite
     return [];
   },
 };
