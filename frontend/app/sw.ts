@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-declare const self: ServiceWorkerGlobalScope;
+declare const self: typeof globalThis & ServiceWorkerGlobalScope;
 
 const API_GET_CACHE_NAME = "inventory-api-get";
 const STYLE_CACHE_NAME = "inventory-styles";
