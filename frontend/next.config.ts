@@ -2,20 +2,35 @@ import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
 const rawBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const normalizedBasePath = rawBasePath
   ? `/${rawBasePath.replace(/^\/+|\/+$/g, "")}`
   : "";
 
+const isDev = process.env.NODE_ENV !== "production";
+
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
+
   register: false,
   reloadOnOnline: true,
-  disable: process.env.NODE_ENV === "development",
+
+  // Aktif hanya saat production
+  disable: isDev,
+
   scope: normalizedBasePath ? `${normalizedBasePath}/` : "/",
-  swUrl: normalizedBasePath ? `${normalizedBasePath}/sw.js` : "/sw.js",
+  swUrl: normalizedBasePath
+    ? `${normalizedBasePath}/sw.js`
+    : "/sw.js",
+
   additionalPrecacheEntries: [
-    { url: normalizedBasePath ? `${normalizedBasePath}/offline` : "/offline", revision: "v1" },
+    {
+      url: normalizedBasePath
+        ? `${normalizedBasePath}/offline`
+        : "/offline",
+      revision: "v1",
+    },
     {
       url: normalizedBasePath
         ? `${normalizedBasePath}/images/offline-image.png`
@@ -33,21 +48,29 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  basePath: normalizedBasePath || undefined,
-  assetPrefix: normalizedBasePath || undefined,
+
+  ...(normalizedBasePath && {
+    basePath: normalizedBasePath,
+    assetPrefix: normalizedBasePath,
+  }),
+
   turbopack: {
     root: process.cwd(),
   },
 
   allowedDevOrigins: [
     "192.168.0.21",
+    "localhost",
+    "127.0.0.1",
   ],
 
   async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: "http://backend/api/:path*",
+        destination:
+          process.env.NEXT_PUBLIC_API_URL ??
+          "http://backend/api/:path*",
       },
     ];
   },
