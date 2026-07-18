@@ -7,7 +7,7 @@ const normalizedBasePath = rawBasePath
   ? `/${rawBasePath.replace(/^\/+|\/+$/g, "")}`
   : "";
 
-const isDev = process.env.NODE_ENV !== "production";
+const isProduction = process.env.NODE_ENV === "production";
 
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
@@ -16,8 +16,7 @@ const withSerwist = withSerwistInit({
   register: false,
   reloadOnOnline: true,
 
-  // Aktif hanya saat production
-  disable: isDev,
+  disable: !isProduction,
 
   scope: normalizedBasePath ? `${normalizedBasePath}/` : "/",
   swUrl: normalizedBasePath
@@ -59,20 +58,23 @@ const nextConfig: NextConfig = {
   },
 
   allowedDevOrigins: [
-    "192.168.0.21",
     "localhost",
     "127.0.0.1",
+    "192.168.0.21",
   ],
 
   async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination:
-          process.env.NEXT_PUBLIC_API_URL ??
-          "http://backend/api/:path*",
-      },
-    ];
+    if (!isProduction) {
+      return [
+        {
+          source: "/api/:path*",
+          destination: "http://backend/api/:path*",
+        },
+      ];
+    }
+
+    // Production tidak perlu rewrite
+    return [];
   },
 };
 
