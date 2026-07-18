@@ -1,14 +1,29 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AssetHistoryController;
+use App\Http\Controllers\Api\PublicAssetController;
+use App\Http\Controllers\Api\PublicDashboardController;
+use App\Http\Controllers\Api\PublicLookupController;
+use App\Http\Controllers\Api\PublicSearchController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SettingController;
+use Illuminate\Support\Facades\Route;
 
 Route::post("/login", [AuthController::class, "login"]);
+
+Route::prefix('public')->group(function (): void {
+    Route::get('/dashboard', [PublicDashboardController::class, 'index']);
+    Route::get('/assets', [PublicAssetController::class, 'index']);
+    Route::get('/categories', [PublicLookupController::class, 'categories']);
+    Route::get('/brands', [PublicLookupController::class, 'brands']);
+    Route::get('/plants', [PublicLookupController::class, 'plants']);
+    Route::get('/locations', [PublicLookupController::class, 'locations']);
+    Route::get('/status', [PublicLookupController::class, 'statuses']);
+    Route::get('/conditions', [PublicLookupController::class, 'conditions']);
+    Route::get('/search', [PublicSearchController::class, 'index']);
+});
 
 Route::middleware("auth:sanctum")->group(function () {
     Route::get("/user", [AuthController::class, "me"]);
