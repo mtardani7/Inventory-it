@@ -47,4 +47,8 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
+
+COPY php.ini /usr/local/etc/php/conf.d/99-custom.ini
+
 ENTRYPOINT ["docker-entrypoint.sh"]

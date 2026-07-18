@@ -56,8 +56,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useTheme } from "@/app/theme-provider";
-import { useAuthContext } from "@/providers/auth-provider";
-import { useReports } from "@/hooks/use-reports";
+import { usePublicDashboard } from "@/hooks/use-public-dashboard";
 
 const features: Array<{ title: string; description: string; icon: LucideIcon }> = [
   { title: "Asset Management", description: "Inventaris perangkat, ownership, lifecycle, dan status operasional dalam satu panel kerja.", icon: Boxes },
@@ -169,34 +168,34 @@ function ThemeToggle() {
 }
 
 export default function LandingPage() {
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuthContext();
-  const reportsQuery = useReports({}, { enabled: isAuthenticated });
-  const report = reportsQuery.data;
+  const dashboardQuery = usePublicDashboard();
+  const report = dashboardQuery.data;
+  const isLoading = dashboardQuery.isLoading;
 
   const summaryCards = useMemo(() => {
     if (!report) {
       return [
-        { label: "Total Asset", value: "-", helper: "Tampilkan setelah login", icon: PackageCheck },
-        { label: "Asset Aktif", value: "-", helper: "Mengikuti summary laporan", icon: Sparkles },
-        { label: "Total Plant", value: "-", helper: "Dihitung dari data plant", icon: Building2 },
-        { label: "Status Tercatat", value: "-", helper: "Dihitung dari kategori status", icon: Database },
-        { label: "Asset Perbaikan", value: "-", helper: "Status Maintenance atau Rusak", icon: Wrench },
-        { label: "Asset Disposal", value: "-", helper: "Status Disposal", icon: Trash2 },
+        { label: "Total Asset", value: "-", helper: "Menunggu public dashboard", icon: PackageCheck },
+        { label: "Asset Aktif", value: "-", helper: "Preview status aktif", icon: Sparkles },
+        { label: "Total Plant", value: "-", helper: "Preview distribusi plant", icon: Building2 },
+        { label: "Total Category", value: "-", helper: "Preview kategori asset", icon: Database },
+        { label: "Asset Perbaikan", value: "-", helper: "Status maintenance atau rusak", icon: Wrench },
+        { label: "Asset Disposal", value: "-", helper: "Status disposal", icon: Trash2 },
       ];
     }
 
     return [
-      { label: "Total Asset", value: report.summary.total_assets.toLocaleString("id-ID"), helper: "Seluruh asset terdaftar", icon: PackageCheck },
-      { label: "Asset Aktif", value: report.summary.active_assets.toLocaleString("id-ID"), helper: "Status aktif saat ini", icon: Sparkles },
-      { label: "Total Plant", value: report.plant_report.length.toLocaleString("id-ID"), helper: "Plant dengan asset terdata", icon: Building2 },
-      { label: "Status Tercatat", value: report.status_report.length.toLocaleString("id-ID"), helper: "Jumlah kategori status", icon: Database },
-      { label: "Asset Perbaikan", value: report.summary.repair_assets.toLocaleString("id-ID"), helper: "Maintenance dan rusak", icon: Wrench },
-      { label: "Asset Disposal", value: report.summary.disposal_assets.toLocaleString("id-ID"), helper: "Siap proses disposal", icon: Trash2 },
+      { label: "Total Asset", value: report.summary.total_asset.toLocaleString("id-ID"), helper: "Seluruh asset terdaftar", icon: PackageCheck },
+      { label: "Asset Aktif", value: report.summary.total_asset_active.toLocaleString("id-ID"), helper: "Status aktif saat ini", icon: Sparkles },
+      { label: "Total Plant", value: report.summary.total_plant.toLocaleString("id-ID"), helper: "Plant dengan asset terdata", icon: Building2 },
+      { label: "Total Category", value: report.summary.total_category.toLocaleString("id-ID"), helper: "Kategori yang tersedia", icon: Database },
+      { label: "Asset Perbaikan", value: report.summary.total_asset_maintenance.toLocaleString("id-ID"), helper: "Maintenance dan rusak", icon: Wrench },
+      { label: "Asset Disposal", value: report.summary.total_asset_disposal.toLocaleString("id-ID"), helper: "Siap proses disposal", icon: Trash2 },
     ];
   }, [report]);
 
   const growthData = useMemo(() => {
-    return (report?.growth_report ?? []).map((item) => {
+    return (report?.charts.asset_procurement_monthly ?? []).map((item) => {
       const date = new Date(`${item.month}-01T00:00:00`);
 
       return {
@@ -209,13 +208,14 @@ export default function LandingPage() {
   }, [report]);
 
   const statusData = useMemo(() => {
-    return (report?.status_report ?? []).map((item, index) => ({
+    return (report?.charts.asset_per_category ?? []).map((item, index) => ({
       ...item,
       color: chartColors[index % chartColors.length],
     }));
   }, [report]);
 
-  const inventoryPreview = report?.inventory_report ?? [];
+  const inventoryPreview = report?.latest_asset ?? [];
+  const recentActivities = report?.recent_activity ?? [];
   const hasRealtimeData = !!report;
 
   return (
@@ -253,7 +253,7 @@ export default function LandingPage() {
                 Inventory IT Management System untuk kontrol asset yang cepat, rapi, dan siap audit.
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-                Halaman utama publik untuk memperkenalkan sistem inventory enterprise. Jika sesi login tersedia, landing page ini langsung menampilkan ringkasan dan preview laporan dari data inventory yang ada.
+                Halaman utama publik untuk memperkenalkan sistem inventory enterprise. Landing page ini memuat preview data langsung dari public API tanpa perlu login.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg" className="h-11 bg-cyan-300 px-5 text-slate-950 hover:bg-cyan-200">
@@ -278,7 +278,7 @@ export default function LandingPage() {
                 </div>
                 <div className="rounded-3xl border border-white/10 bg-white/8 p-4 backdrop-blur-sm">
                   <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Readiness</p>
-                  <p className="mt-2 text-lg font-semibold">Realtime reporting saat login</p>
+                  <p className="mt-2 text-lg font-semibold">Public preview tanpa login</p>
                 </div>
               </div>
             </div>
@@ -292,27 +292,27 @@ export default function LandingPage() {
                       <CardTitle className="text-white">Executive Overview</CardTitle>
                       <CardDescription className="text-slate-300">Unified control center for assets, plants, status, and audit visibility</CardDescription>
                     </div>
-                    <Badge className="bg-emerald-400/15 text-emerald-200">{hasRealtimeData ? "Data Existing" : "Public Preview"}</Badge>
+                    <Badge className="bg-emerald-400/15 text-emerald-200">{hasRealtimeData ? "Public API Live" : isLoading ? "Loading" : "Preview"}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-5 pt-5">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="rounded-3xl border border-white/10 bg-slate-950/45 p-4">
                       <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Ringkasan Data</p>
-                      <p className="mt-3 text-3xl font-semibold">{hasRealtimeData ? report.summary.total_assets.toLocaleString("id-ID") : "-"}</p>
-                      <p className="mt-2 text-sm text-slate-300">{hasRealtimeData ? "Jumlah seluruh asset pada laporan inventory." : "Masuk untuk memuat angka aktual dari sistem."}</p>
+                      <p className="mt-3 text-3xl font-semibold">{hasRealtimeData ? report.summary.total_asset.toLocaleString("id-ID") : isLoading ? "..." : "-"}</p>
+                      <p className="mt-2 text-sm text-slate-300">{hasRealtimeData ? "Jumlah seluruh asset pada public dashboard preview." : "Public dashboard akan tampil otomatis ketika endpoint siap dibaca."}</p>
                     </div>
                     <div className="rounded-3xl border border-white/10 bg-slate-950/45 p-4">
-                      <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Akses Realtime</p>
-                      <p className="mt-3 text-3xl font-semibold">{hasRealtimeData ? "On" : "Off"}</p>
-                      <p className="mt-2 text-sm text-slate-300">{hasRealtimeData ? "Landing page sedang menampilkan report existing." : "Landing page publik tetap aktif tanpa membuka data privat."}</p>
+                      <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Recent Activity</p>
+                      <p className="mt-3 text-3xl font-semibold">{hasRealtimeData ? recentActivities.length.toLocaleString("id-ID") : isLoading ? "..." : "-"}</p>
+                      <p className="mt-2 text-sm text-slate-300">{hasRealtimeData ? "Aktivitas terbaru yang aman untuk preview publik." : "Section ini mengambil maksimal 10 activity dari endpoint public."}</p>
                     </div>
                   </div>
                   <div className="rounded-3xl border border-white/10 bg-slate-950/45 p-4">
                     <div className="mb-4 flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-white">Growth Report</p>
-                        <p className="text-xs text-slate-400">Trend berdasarkan data existing pada modul laporan</p>
+                        <p className="text-xs text-slate-400">Trend procurement bulanan dari public dashboard</p>
                       </div>
                       <Database className="size-4 text-cyan-200" />
                     </div>
@@ -336,8 +336,8 @@ export default function LandingPage() {
                         </ResponsiveContainer>
                       ) : (
                         <PreviewEmptyState
-                          title={isAuthLoading ? "Memeriksa sesi" : "Preview growth tersedia setelah login"}
-                          description="Landing page publik tidak menampilkan angka buatan. Grafik akan memuat data pertumbuhan dari report existing ketika sesi autentikasi tersedia."
+                          title={isLoading ? "Memuat public dashboard" : "Growth preview belum tersedia"}
+                          description="Landing page publik tidak menampilkan angka buatan. Grafik ini akan memakai response `/api/public/dashboard` ketika data tersedia."
                         />
                       )}
                     </div>
@@ -354,10 +354,10 @@ export default function LandingPage() {
           <div className="animate-fade-up flex items-end justify-between gap-6">
             <div>
               <Badge variant="outline" className="border-border bg-background/70">Statistik Sistem</Badge>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Ringkasan yang mengikuti data laporan existing.</h2>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Ringkasan yang mengikuti public dashboard preview.</h2>
             </div>
             <p className="hidden max-w-xl text-sm leading-7 text-muted-foreground lg:block">
-              Tidak ada angka dummy di section ini. Saat belum login, card tetap tampil sebagai preview UI tanpa mengarang nilai statistik.
+              Tidak ada angka dummy di section ini. Semua card membaca response public API atau menampilkan empty state saat data belum tersedia.
             </p>
           </div>
 
@@ -376,10 +376,10 @@ export default function LandingPage() {
           <div className="animate-fade-up flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <Badge variant="outline" className="border-border bg-background/70">Dashboard Preview</Badge>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Preview dashboard modern dengan grafik, KPI card, dan tabel dari report existing.</h2>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Preview dashboard modern dengan grafik, KPI card, dan tabel dari public API.</h2>
             </div>
             <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
-              Desain diarahkan ke nuansa enterprise seperti ERP, SAP, dan Freshservice: padat informasi, bersih, mudah dipindai, dan hanya memakai data yang memang tersedia.
+              Desain diarahkan ke nuansa enterprise seperti ERP, SAP, dan Freshservice: padat informasi, bersih, mudah dipindai, dan hanya memakai data yang memang tersedia dari endpoint publik.
             </p>
           </div>
 
@@ -387,7 +387,7 @@ export default function LandingPage() {
             <Card className="animate-fade-up border-border/60 bg-card/80 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.35)]" style={{ animationDelay: "100ms" }}>
               <CardHeader className="border-b border-border/60 pb-5">
                 <CardTitle>Trend dan Beban Operasional</CardTitle>
-                <CardDescription>Plant report, status report, dan growth report dari modul laporan inventory.</CardDescription>
+                <CardDescription>Chart plant, category, condition, dan procurement dari `/api/public/dashboard`.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-6 pt-6 lg:grid-cols-2">
                 <div className="rounded-3xl border border-border/60 bg-background/70 p-4">
@@ -415,9 +415,9 @@ export default function LandingPage() {
                   <div className="rounded-3xl border border-border/60 bg-background/70 p-4">
                     <p className="mb-3 text-sm font-medium">Asset per Plant</p>
                     <div className="h-40">
-                      {hasRealtimeData && report.plant_report.length ? (
+                      {hasRealtimeData && report.charts.asset_per_plant.length ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={report.plant_report}>
+                          <BarChart data={report.charts.asset_per_plant}>
                             <CartesianGrid stroke="rgba(148,163,184,0.14)" vertical={false} />
                             <XAxis dataKey="name" tickLine={false} axisLine={false} />
                             <Tooltip />
@@ -427,13 +427,13 @@ export default function LandingPage() {
                       ) : (
                         <PreviewEmptyState
                           title="Plant report belum dimuat"
-                          description="Distribusi plant akan menggunakan report existing setelah autentikasi aktif."
+                          description="Distribusi plant akan menggunakan data public dashboard tanpa login."
                         />
                       )}
                     </div>
                   </div>
                   <div className="rounded-3xl border border-border/60 bg-background/70 p-4">
-                    <p className="mb-3 text-sm font-medium">Asset per Status</p>
+                    <p className="mb-3 text-sm font-medium">Asset per Category</p>
                     <div className="h-40">
                       {hasRealtimeData && statusData.length ? (
                         <ResponsiveContainer width="100%" height="100%">
@@ -448,8 +448,8 @@ export default function LandingPage() {
                         </ResponsiveContainer>
                       ) : (
                         <PreviewEmptyState
-                          title="Status report belum dimuat"
-                          description="Proporsi status akan ditampilkan dari data laporan yang sudah ada, tanpa dummy data."
+                          title="Category report belum dimuat"
+                          description="Distribusi kategori akan ditampilkan dari data public dashboard, tanpa dummy data."
                         />
                       )}
                     </div>
@@ -467,26 +467,60 @@ export default function LandingPage() {
                 <div className="rounded-3xl border border-border/60 bg-background/70 p-5">
                   <p className="text-sm text-muted-foreground">Inventory Records</p>
                   <p className="mt-3 text-4xl font-semibold">{hasRealtimeData ? inventoryPreview.length.toLocaleString("id-ID") : "-"}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{hasRealtimeData ? "Jumlah row preview yang dikirim endpoint report." : "Preview akan aktif ketika ada sesi login yang valid."}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{hasRealtimeData ? "Jumlah latest asset yang dikirim endpoint public dashboard." : "Preview akan aktif ketika public dashboard merespons data."}</p>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
                   <div className="rounded-3xl border border-border/60 bg-background/70 p-5">
-                    <p className="text-sm text-muted-foreground">Top Users</p>
-                    <p className="mt-3 text-3xl font-semibold">{hasRealtimeData ? report.user_report.length.toLocaleString("id-ID") : "-"}</p>
+                    <p className="text-sm text-muted-foreground">Total User</p>
+                    <p className="mt-3 text-3xl font-semibold">{hasRealtimeData ? report.summary.total_user.toLocaleString("id-ID") : "-"}</p>
                   </div>
                   <div className="rounded-3xl border border-border/60 bg-background/70 p-5">
-                    <p className="text-sm text-muted-foreground">Status Groups</p>
-                    <p className="mt-3 text-3xl font-semibold">{hasRealtimeData ? report.status_report.length.toLocaleString("id-ID") : "-"}</p>
+                    <p className="text-sm text-muted-foreground">Total Brand</p>
+                    <p className="mt-3 text-3xl font-semibold">{hasRealtimeData ? report.summary.total_brand.toLocaleString("id-ID") : "-"}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
+          <Card className="animate-fade-up mt-6 border-border/60 bg-card/80" style={{ animationDelay: "220ms" }}>
+            <CardHeader className="border-b border-border/60 pb-5">
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Cuplikan aktivitas terbaru yang aman ditampilkan di landing page publik.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {hasRealtimeData && recentActivities.length ? (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {recentActivities.slice(0, 6).map((activity) => (
+                    <div key={activity.id} className="rounded-3xl border border-border/60 bg-background/70 p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-semibold capitalize">{activity.action}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">{activity.description}</p>
+                        </div>
+                        <Badge variant="outline" className="bg-background/80">{activity.asset?.status || "-"}</Badge>
+                      </div>
+                      <div className="mt-4 space-y-1 text-xs text-muted-foreground">
+                        <p>Asset: {activity.asset?.asset_code || "-"}</p>
+                        <p>Actor: {activity.actor?.name || "System"}</p>
+                        <p>Waktu: {formatDate(activity.created_at)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <PreviewEmptyState
+                  title={isLoading ? "Memuat aktivitas publik" : "Belum ada activity preview"}
+                  description="Section ini akan menampilkan recent activity yang aman dari endpoint public dashboard."
+                />
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="animate-fade-up mt-6 border-border/60 bg-card/80" style={{ animationDelay: "260ms" }}>
             <CardHeader className="border-b border-border/60 pb-5">
               <CardTitle>Table Preview</CardTitle>
-              <CardDescription>Cuplikan inventaris dari `inventory_report` dengan kolom preview yang lebih lengkap.</CardDescription>
+              <CardDescription>Cuplikan latest asset dari public dashboard dengan kolom preview yang lebih lengkap.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               {hasRealtimeData && inventoryPreview.length ? (
@@ -506,11 +540,11 @@ export default function LandingPage() {
                   <TableBody>
                     {inventoryPreview.map((row) => (
                       <TableRow key={row.id}>
-                        <TableCell className="font-medium">{row.no_asset || "-"}</TableCell>
-                        <TableCell>{row.no_serial || "-"}</TableCell>
-                        <TableCell>{row.tipe || "-"}</TableCell>
+                        <TableCell className="font-medium">{row.asset_code || "-"}</TableCell>
+                        <TableCell>{row.serial_number || "-"}</TableCell>
+                        <TableCell>{row.asset_name || "-"}</TableCell>
                         <TableCell>{row.plant || "-"}</TableCell>
-                        <TableCell>{row.pengguna || "-"}</TableCell>
+                        <TableCell>{row.user_name || "-"}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="bg-background/80">{row.status}</Badge>
                         </TableCell>
@@ -522,8 +556,8 @@ export default function LandingPage() {
                 </Table>
               ) : (
                 <PreviewEmptyState
-                  title="Table preview menunggu autentikasi"
-                  description="Tabel ini hanya akan menampilkan row nyata dari endpoint report. Untuk pengunjung publik, komponen tetap terlihat tanpa mengisi data palsu."
+                  title={isLoading ? "Memuat latest asset" : "Table preview belum tersedia"}
+                  description="Tabel ini hanya akan menampilkan row nyata dari endpoint public dashboard. Komponen tetap terlihat tanpa mengisi data palsu."
                 />
               )}
             </CardContent>
