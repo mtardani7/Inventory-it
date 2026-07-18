@@ -16,9 +16,13 @@ const withSerwist = withSerwistInit({
   register: false,
   reloadOnOnline: true,
 
+  // PWA hanya aktif saat production
   disable: !isProduction,
 
-  scope: normalizedBasePath ? `${normalizedBasePath}/` : "/",
+  scope: normalizedBasePath
+    ? `${normalizedBasePath}/`
+    : "/",
+
   swUrl: normalizedBasePath
     ? `${normalizedBasePath}/sw.js`
     : "/sw.js",
@@ -64,15 +68,12 @@ const nextConfig: NextConfig = {
   ],
 
   async rewrites() {
-    if (!isProduction) {
-      return [
-        {
-          source: "/api/:path*",
-          destination: "http://backend/api/:path*",
-        },
-      ];
-    }
-    return [];
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://backend/api/:path*",
+      },
+    ];
   },
 };
 
