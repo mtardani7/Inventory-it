@@ -8,10 +8,11 @@ export const reportKeys = {
   list: (params: ReportFilters) => [...reportKeys.all, params] as const,
 };
 
-export function useReports(params: ReportFilters) {
+export function useReports(params: ReportFilters, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: reportKeys.list(params),
     queryFn: () => ReportService.getReports(params),
+    enabled: options?.enabled ?? true,
     staleTime: 1000 * 30,
     gcTime: 1000 * 60 * 10,
     placeholderData: (previousData) => previousData,

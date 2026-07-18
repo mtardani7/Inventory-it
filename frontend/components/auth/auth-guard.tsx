@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useAuthContext } from "@/providers/auth-provider";
 
 const PUBLIC_ROUTES = [
+  "/",
   "/login",
   "/register",
   "/forgot-password",
@@ -19,17 +20,15 @@ export function AuthGuard({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const isPublic = PUBLIC_ROUTES.includes(pathname);
 
   const {
-    user,
     isAuthenticated,
     isLoading,
   } = useAuthContext();
 
   useEffect(() => {
-    if (isLoading) return;
-
-    const isPublic = PUBLIC_ROUTES.includes(pathname);
+    if (isLoading && !isPublic) return;
 
     if (!isAuthenticated && !isPublic) {
       router.replace("/login");
@@ -39,7 +38,15 @@ export function AuthGuard({
     if (isAuthenticated && pathname === "/login") {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, isLoading, pathname, router]);
+  }, [isAuthenticated, isLoading, isPublic, pathname, router]);
+
+  if (isPublic) {
+    if (isAuthenticated && pathname === "/login") {
+      return null;
+    }
+
+    return <>{children}</>;
+  }
 
   if (isLoading) {
     return (
@@ -48,8 +55,6 @@ export function AuthGuard({
       </div>
     );
   }
-
-  const isPublic = PUBLIC_ROUTES.includes(pathname);
 
   if (!isAuthenticated && !isPublic) {
     return null;
