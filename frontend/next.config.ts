@@ -72,7 +72,6 @@ const nextConfig: NextConfig = {
         },
       ];
     }
-
     return [];
   },
 };
