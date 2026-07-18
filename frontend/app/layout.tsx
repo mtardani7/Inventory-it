@@ -5,25 +5,55 @@ import Providers from "./providers";
 import { AuthProvider } from "@/providers/auth-provider";
 import { AuthGuard } from "@/components/auth/auth-guard";
 
+const rawBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const basePath = rawBasePath ? `/${rawBasePath.replace(/^\/+|\/+$/g, "")}` : "";
+const withBasePath = (path: string) => `${basePath}${path}`;
+
 export const metadata: Metadata = {
+  applicationName: "Inventory IT",
   title: "Inventory IT",
   description: "Inventory IT Management System",
-  manifest: "/manifest.webmanifest",
+  manifest: withBasePath("/manifest.webmanifest"),
+  formatDetection: {
+    telephone: false,
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Inventory IT",
+    startupImage: [
+      {
+        url: withBasePath("/screenshots/dashboard-wide.png"),
+        media: "(device-width: 1024px)",
+      },
+      {
+        url: withBasePath("/screenshots/dashboard-narrow.png"),
+        media: "(device-width: 390px)",
+      },
+    ],
   },
-  icons: [
-    {
-      rel: "icon",
-      url: "/icon-192.svg",
-    },
-    {
-      rel: "apple-touch-icon",
-      url: "/icon-192.svg",
-    },
-  ],
+  icons: {
+    icon: [
+      {
+        url: withBasePath("/icons/icon-192x192.png"),
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: withBasePath("/icons/icon-512x512.png"),
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: withBasePath("/icons/icon-192x192.png"),
+        sizes: "192x192",
+        type: "image/png",
+      },
+    ],
+    shortcut: [withBasePath("/icons/icon-192x192.png")],
+  },
 };
 
 export const viewport: Viewport = {

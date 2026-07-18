@@ -1,22 +1,80 @@
 {
   "name": "Inventory IT",
   "short_name": "Inventory IT",
+  "id": "./",
   "description": "Inventory management system for assets and disposal workflows",
-  "start_url": "/dashboard",
+  "lang": "id-ID",
+  "dir": "ltr",
+  "scope": "./",
+  "start_url": "./dashboard",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#ffffff",
   "theme_color": "#0f172a",
   "orientation": "portrait",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/icon-192.svg",
+      "src": "./icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/icon-512.svg",
+      "src": "./icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./screenshots/dashboard-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard inventory desktop"
+    },
+    {
+      "src": "./screenshots/dashboard-narrow.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard inventory mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Buka dashboard inventory",
+      "url": "./dashboard",
+      "icons": [
+        {
+          "src": "./icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Profil",
+      "short_name": "Profil",
+      "description": "Buka profil pengguna",
+      "url": "./profile",
+      "icons": [
+        {
+          "src": "./icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

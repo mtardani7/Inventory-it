@@ -16,6 +16,9 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
   const [installable, setInstallable] = useState(false);
   const isOnline = useOnlineStatus();
   const isProduction = process.env.NODE_ENV === "production";
+  const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/, "");
+  const swPath = `${basePath}/sw.js`;
+  const swScope = `${basePath || ""}/`;
 
   useEffect(() => {
     if (!isProduction || typeof window === "undefined") {
@@ -34,7 +37,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const swResponse = await fetch("/sw.js", {
+        const swResponse = await fetch(swPath, {
           method: "HEAD",
           cache: "no-store",
         });
@@ -43,7 +46,29 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+        const registration = await navigator.serviceWorker.register(swPath, {
+          scope: swScope,
+        });
+
+        registration.addEventListener("updatefound", () => {
+          const installingWorker = registration.installing;
+          if (!installingWorker) {
+            return;
+          }
+
+          installingWorker.addEventListener("statechange", () => {
+            if (
+              installingWorker.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
+              installingWorker.postMessage({ type: "SKIP_WAITING" });
+            }
+          });
+        });
+
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          window.location.reload();
+        });
       } catch (error) {
         console.warn("Service worker registration failed", error);
       }
@@ -52,7 +77,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     void registerServiceWorker();
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, [isProduction]);
+  }, [isProduction, swPath, swScope]);
 
   return (
     <>
