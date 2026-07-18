@@ -82,7 +82,7 @@
     </style>
 </head>
 <body>
-<div class="title-company">PT Inventory IT Nusantara</div>
+<div class="title-company">PT Rapid Plast Indonesia</div>
 <div class="title-report">Laporan Export Inventory IT</div>
 <div class="meta">
     Tanggal Export: {{ $exportedAt }}<br>
