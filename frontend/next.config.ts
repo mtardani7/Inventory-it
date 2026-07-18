@@ -35,6 +35,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   basePath: normalizedBasePath || undefined,
   assetPrefix: normalizedBasePath || undefined,
+  turbopack: {
+    root: process.cwd(),
+  },
 
   allowedDevOrigins: [
     "192.168.0.21",
