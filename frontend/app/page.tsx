@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -151,6 +151,12 @@ function StatisticCard({
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isDark = resolvedTheme === "dark";
 
   return (
@@ -160,9 +166,10 @@ function ThemeToggle() {
       size="icon"
       aria-label="Toggle theme"
       className="border-white/15 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 dark:border-white/10 dark:bg-white/5"
+      disabled={!mounted}
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
-      {isDark ? <SunMedium className="size-4" /> : <MoonStar className="size-4" />}
+      {mounted && isDark ? <SunMedium className="size-4" /> : <MoonStar className="size-4" />}
     </Button>
   );
 }
