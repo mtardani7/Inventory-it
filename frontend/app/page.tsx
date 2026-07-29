@@ -616,18 +616,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-border/60 bg-muted/20 px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div className="animate-fade-up max-w-2xl">
-            <Badge variant="outline" className="border-border bg-background/70">Screenshot Dashboard</Badge>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Tampilan dashboard yang tetap fokus pada produktivitas operator.</h2>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              Screenshot bawaan aplikasi tetap dipakai sebagai referensi visual agar landing page terhubung dengan pengalaman produk yang sebenarnya, tanpa mengarang isi data.
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="animate-fade-up max-w-2xl">
