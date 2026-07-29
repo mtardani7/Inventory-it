@@ -13,7 +13,7 @@ const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
 
-  register: false,
+  register: true,
   reloadOnOnline: true,
 
   disable: !isProduction,
