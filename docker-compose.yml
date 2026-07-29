@@ -17,24 +17,20 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_PATH: inventory
-
     container_name: inventory-frontend
     restart: unless-stopped
-
     ports:
       - "3000:3000"
-
-    environment:
-      NEXT_PUBLIC_BASE_PATH: inventory
-      NODE_ENV: production
-
+    env_file:
+      - ./frontend/.env.local
     depends_on:
       - backend
-
     networks:
       - inventory-network
+
+volumes:
+  frontend_node_modules:
+  frontend_next:
 
 networks:
   inventory-network:
