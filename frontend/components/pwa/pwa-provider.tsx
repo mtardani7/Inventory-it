@@ -12,11 +12,11 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-interface SerwistWindow extends Window {
+type SerwistWindow = Window & {
   serwist?: {
     register: () => Promise<ServiceWorkerRegistration> | ServiceWorkerRegistration;
   };
-}
+};
 
 export function PwaProvider({ children }: { children: React.ReactNode }) {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -58,7 +58,14 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
         const serwistRegister = (window as SerwistWindow).serwist?.register;
 
         if (typeof serwistRegister === "function") {
-          registration = await serwistRegister();
+          const serwistRegistration = await Promise.resolve(serwistRegister());
+          if (serwistRegistration) {
+            registration = serwistRegistration;
+          } else {
+            registration = await navigator.serviceWorker.register(swPath, {
+              scope: swScope,
+            });
+          }
         } else {
           registration = await navigator.serviceWorker.register(swPath, {
             scope: swScope,
