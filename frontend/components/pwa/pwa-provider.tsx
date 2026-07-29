@@ -24,7 +24,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
   const swScope = `${basePath || ""}/`;
 
   useEffect(() => {
-    if (!isProduction || typeof window === "undefined") {
+    if (typeof window === "undefined") {
       return;
     }
 

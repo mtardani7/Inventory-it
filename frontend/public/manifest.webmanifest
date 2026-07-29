@@ -1,12 +1,12 @@
 {
   "name": "Inventory IT",
   "short_name": "Inventory IT",
-  "id": "./",
+  "id": "/",
   "description": "Inventory management system for assets and disposal workflows",
   "lang": "id-ID",
   "dir": "ltr",
-  "scope": "./",
-  "start_url": "./dashboard",
+  "scope": "/",
+  "start_url": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#ffffff",
@@ -15,19 +15,19 @@
   "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
-      "src": "./icons/icon-192x192.png",
+      "src": "/icons/icon-192x192-v2.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/icon-512x512.png",
+      "src": "/icons/icon-512x512-v2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/icon-512x512-maskable.png",
+      "src": "/icons/icon-512x512-maskable-v2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -41,7 +41,7 @@
       "url": "./dashboard",
       "icons": [
         {
-          "src": "./icons/icon-192x192.png",
+          "src": "/icons/icon-192x192-v2.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -54,7 +54,7 @@
       "url": "./profile",
       "icons": [
         {
-          "src": "./icons/icon-192x192.png",
+          "src": "/icons/icon-192x192-v2.png",
           "sizes": "192x192",
           "type": "image/png"
         }

@@ -46,24 +46,24 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: withBasePath("/icons/icon-192x192.png"),
+        url: withBasePath("/icons/icon-192x192-v2.png"),
         sizes: "192x192",
         type: "image/png",
       },
       {
-        url: withBasePath("/icons/icon-512x512.png"),
+        url: withBasePath("/icons/icon-512x512-v2.png"),
         sizes: "512x512",
         type: "image/png",
       },
     ],
     apple: [
       {
-        url: withBasePath("/icons/icon-192x192.png"),
+        url: withBasePath("/icons/icon-192x192-v2.png"),
         sizes: "192x192",
         type: "image/png",
       },
     ],
-    shortcut: [withBasePath("/icons/icon-192x192.png")],
+    shortcut: [withBasePath("/icons/icon-192x192-v2.png")],
   },
 };
 
