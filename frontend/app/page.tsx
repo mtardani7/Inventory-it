@@ -625,19 +625,6 @@ export default function LandingPage() {
               Screenshot bawaan aplikasi tetap dipakai sebagai referensi visual agar landing page terhubung dengan pengalaman produk yang sebenarnya, tanpa mengarang isi data.
             </p>
           </div>
-
-          <div className="animate-fade-up rounded-[2rem] border border-border/60 bg-card/80 p-3 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.45)]" style={{ animationDelay: "120ms" }}>
-            <div className="overflow-hidden rounded-[1.5rem] border border-border/60">
-              <Image
-                src="/screenshots/dashboard-wide.png"
-                alt="Inventory IT dashboard screenshot"
-                width={1600}
-                height={900}
-                className="h-auto w-full object-cover"
-                priority
-              />
-            </div>
-          </div>
         </div>
       </section>
 
