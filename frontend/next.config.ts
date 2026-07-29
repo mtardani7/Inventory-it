@@ -16,7 +16,6 @@ const withSerwist = withSerwistInit({
   register: false,
   reloadOnOnline: true,
 
-  // PWA hanya aktif saat production
   disable: !isProduction,
 
   scope: normalizedBasePath
