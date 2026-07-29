@@ -28,21 +28,6 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Inventory IT",
-    startupImage: [
-      {
-        url: withBasePath("/screenshots/dashboard-wide.png"),
-        media: "(device-width: 1024px)",
-      },
-      {
-        url: withBasePath("/screenshots/dashboard-narrow.png"),
-        media: "(device-width: 390px)",
-      },
-    ],
-  },
   icons: {
     icon: [
       {
