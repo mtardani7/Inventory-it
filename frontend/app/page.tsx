@@ -227,8 +227,8 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl">
           <header className="animate-fade-up flex items-center justify-between gap-4 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-white/90 backdrop-blur-md sm:px-6">
             <div className="flex items-center gap-3">
-              <div className="flex size-11 items-center justify-center rounded-2xl bg-linear-to-br from-sky-400 via-cyan-300 to-teal-300 text-slate-950 shadow-[0_18px_45px_-24px_rgba(34,211,238,0.9)]">
-                <Boxes className="size-5" />
+              <div className="flex size-11 items-center justify-center rounded-2xl">
+                <img src="./icons/icon-192x192.png" alt="" />
               </div>
               <div>
                 <p className="text-sm font-semibold tracking-[0.28em] text-cyan-200 uppercase">Inventory IT</p>

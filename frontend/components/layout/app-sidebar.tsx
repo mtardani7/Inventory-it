@@ -15,9 +15,8 @@ const items = [
 export function AppSidebar() {
   return (
     <aside className="flex h-full w-64 flex-col border-r bg-background p-4">
-      <div className="px-2 py-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Inventory IT</p>
-        <p className="mt-1 text-sm text-muted-foreground">Mobile-first asset operations</p>
+      <div className="px-2 py-2 flex items-center justify-center">
+        <img src="./icons/icon-192x192.png" alt="Inventory IT Logo" className="h-12 w-12 rounded-full" />
       </div>
 
       <nav className="mt-6 space-y-1">
