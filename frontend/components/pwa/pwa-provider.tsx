@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Download, WifiOff } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { useOnlineStatus } from "@/hooks/use-online-status";
@@ -14,6 +15,8 @@ interface BeforeInstallPromptEvent extends Event {
 export function PwaProvider({ children }: { children: React.ReactNode }) {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installable, setInstallable] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isIos, setIsIos] = useState(false);
   const isOnline = useOnlineStatus();
   const isProduction = process.env.NODE_ENV === "production";
   const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/, "");
@@ -24,6 +27,14 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     if (!isProduction || typeof window === "undefined") {
       return;
     }
+
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
+    setIsStandalone(standalone);
+
+    const ua = window.navigator.userAgent.toLowerCase();
+    setIsIos(/iphone|ipad|ipod/.test(ua));
 
     const handler = (event: Event) => {
       event.preventDefault();
@@ -37,15 +48,6 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const swResponse = await fetch(swPath, {
-          method: "HEAD",
-          cache: "no-store",
-        });
-
-        if (!swResponse.ok) {
-          return;
-        }
-
         const registration = await navigator.serviceWorker.register(swPath, {
           scope: swScope,
         });
@@ -74,10 +76,22 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    const onInstalled = () => {
+      setInstallPrompt(null);
+      setInstallable(false);
+      setIsStandalone(true);
+    };
+
     void registerServiceWorker();
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
   }, [isProduction, swPath, swScope]);
+
+  const canShowInstallCta = isProduction && !isStandalone;
 
   return (
     <>
@@ -90,26 +104,36 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
         </div>
       ) : null}
 
-      {installable && installPrompt ? (
-        <div className="fixed inset-x-3 bottom-3 z-[100] flex flex-col gap-2 rounded-xl border bg-background/95 p-3 shadow-lg sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-2">
-            <Download className="mt-0.5 size-4 text-primary" />
-            <div>
-              <p className="text-sm font-medium">Pasang Inventory IT</p>
-              <p className="text-xs text-muted-foreground">Akses cepat dari layar utama.</p>
-            </div>
+      {canShowInstallCta ? (
+        <>
+          <div className="fixed bottom-4 right-3 z-[110] sm:right-4">
+            <Button
+              type="button"
+              size="sm"
+              className="h-11 rounded-full px-4 shadow-lg"
+              onClick={async () => {
+                if (!installable || !installPrompt) {
+                  toast.info(
+                    isIos
+                      ? "Safari iOS: ketuk Share lalu pilih Add to Home Screen."
+                      : "Browser belum menampilkan prompt install. Buka menu browser lalu pilih Install app / Add to Home Screen.",
+                  );
+                  return;
+                }
+
+                await installPrompt.prompt();
+                const choice = await installPrompt.userChoice;
+                if (choice.outcome === "accepted") {
+                  setInstallPrompt(null);
+                  setInstallable(false);
+                }
+              }}
+            >
+              <Download className="mr-2 size-4" />
+              Install App
+            </Button>
           </div>
-          <Button
-            size="sm"
-            onClick={async () => {
-              await installPrompt.prompt();
-              setInstallPrompt(null);
-              setInstallable(false);
-            }}
-          >
-            Pasang
-          </Button>
-        </div>
+        </>
       ) : null}
 
       {children}
