@@ -21,15 +21,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="min-w-0">
       {shouldShowSidebar ? (
-        <div className="hidden md:block">
+        <div className="hidden shrink-0 md:block">
           <AppSidebar />
         </div>
       ) : null}
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <AppHeader {...headerProps} />
-        <main className="flex-1 overflow-x-hidden p-3 sm:p-4 md:p-6">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-hidden p-3 sm:p-4 md:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

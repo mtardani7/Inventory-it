@@ -308,7 +308,7 @@ export default function InventoryPage() {
   }, [deferredSearch, exportProductsPdf, plant, sortField, sortOrder, status]);
 
   return (
-    <main className="space-y-6 overflow-x-hidden p-4 md:p-6">
+    <main className="w-full min-w-0 space-y-6 overflow-x-hidden p-4 md:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Inventory IT</h1>
