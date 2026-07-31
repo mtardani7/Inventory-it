@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
-const rawBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const rawBasePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").trim();
 
-const normalizedBasePath = rawBasePath
+const normalizedBasePath = rawBasePath && rawBasePath !== "inventory" && rawBasePath !== "/inventory"
   ? `/${rawBasePath.replace(/^\/+|\/+$/g, "")}`
   : "";
 
