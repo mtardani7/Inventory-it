@@ -308,18 +308,18 @@ export default function InventoryPage() {
   }, [deferredSearch, exportProductsPdf, plant, sortField, sortOrder, status]);
 
   return (
-    <main className="space-y-6 p-4 md:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
+    <main className="space-y-6 overflow-x-hidden p-4 md:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Inventory IT</h1>
           <p className="text-sm text-muted-foreground">
             Kelola data perangkat, pengguna, plant, status, dan riwayat pemakaian.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground">
-          <PackageSearch className="size-4" />
-          {productsQuery.data?.total ?? 0} asset
+        <div className="flex w-full flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground sm:w-auto">
+          <PackageSearch className="size-4 shrink-0" />
+          <span>{productsQuery.data?.total ?? 0} asset</span>
         </div>
       </div>
 
@@ -355,7 +355,7 @@ export default function InventoryPage() {
       />
 
       {/* Column visibility controls (persisted to localStorage) */}
-      <div className="flex justify-end">
+      <div className="flex justify-start sm:justify-end">
         <ColumnVisibilityMenu
           columns={INVENTORY_COLUMN_META.map((c) => ({ id: c.id, label: c.label }))}
           visibility={columnVisibility}

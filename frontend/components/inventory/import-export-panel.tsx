@@ -105,38 +105,38 @@ export function ImportExportPanel({
 
   return (
     <>
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <div>
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div className="min-w-0">
               <CardTitle className="flex items-center gap-2">
                 <Download className="size-4" />
                 Impor & Ekspor Data
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-2 max-w-2xl break-words">
                 Impor daftar asset dari Excel, unduh template, atau ekspor data ke Excel, CSV, dan PDF.
               </CardDescription>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground sm:text-right">
               {totalProducts} asset tersedia untuk ekspor
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={() => setUploadOpen(true)} disabled={isImporting}>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:flex-wrap">
+            <Button className="w-full justify-center sm:w-auto" type="button" variant="outline" onClick={() => setUploadOpen(true)} disabled={isImporting}>
               <Upload className="size-4" />
               Impor Excel
             </Button>
-            <Button type="button" variant="outline" onClick={onDownloadTemplate}>
+            <Button className="w-full justify-center sm:w-auto" type="button" variant="outline" onClick={onDownloadTemplate}>
               <FileDown className="size-4" />
               {exportingType === "template" ? "Memproses..." : "Download Template"}
             </Button>
-            <Button type="button" variant="outline" onClick={onExportExcel} disabled={exportingType === "excel"}>
+            <Button className="w-full justify-center sm:w-auto" type="button" variant="outline" onClick={onExportExcel} disabled={exportingType === "excel"}>
               <FileSpreadsheet className="size-4" />
               {exportingType === "excel" ? "Memproses..." : "Export Excel"}
             </Button>
-            <Button type="button" variant="outline" onClick={onExportPdf} disabled={exportingType === "pdf"}>
+            <Button className="w-full justify-center sm:w-auto" type="button" variant="outline" onClick={onExportPdf} disabled={exportingType === "pdf"}>
               <FileDown className="size-4" />
               {exportingType === "pdf" ? "Memproses..." : "Export PDF"}
             </Button>
@@ -217,11 +217,11 @@ export function ImportExportPanel({
             </div>
           </div>
 
-          <DialogFooter className="flex-none justify-end px-6 py-4">
-            <Button type="button" variant="outline" onClick={() => setUploadOpen(false)} disabled={isImporting}>
+          <DialogFooter className="flex flex-col-reverse gap-2 px-6 py-4 sm:flex-row sm:justify-end">
+            <Button className="w-full sm:w-auto" type="button" variant="outline" onClick={() => setUploadOpen(false)} disabled={isImporting}>
               Batal
             </Button>
-            <Button type="button" onClick={() => void handleImportSubmit()} disabled={!canSubmit}>
+            <Button className="w-full sm:w-auto" type="button" onClick={() => void handleImportSubmit()} disabled={!canSubmit}>
               {isImporting ? "Mengimpor..." : "Mulai Import"}
             </Button>
           </DialogFooter>
@@ -245,13 +245,13 @@ export function ImportExportPanel({
             <SummaryItem label="Failed" value={summary?.summary.failed ?? 0} />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             {hasRowErrors ? (
-              <Button type="button" variant="outline" onClick={() => setErrorOpen(true)}>
+              <Button className="w-full sm:w-auto" type="button" variant="outline" onClick={() => setErrorOpen(true)}>
                 Lihat Detail Error
               </Button>
             ) : null}
-            <Button type="button" onClick={() => setSummaryOpen(false)}>Tutup</Button>
+            <Button className="w-full sm:w-auto" type="button" onClick={() => setSummaryOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -284,8 +284,8 @@ export function ImportExportPanel({
             <p className="text-xs text-muted-foreground">Menampilkan {errorRowsPreview.length} dari {summary.errors.length} error baris.</p>
           ) : null}
 
-          <DialogFooter>
-            <Button type="button" onClick={() => setErrorOpen(false)}>Tutup</Button>
+          <DialogFooter className="flex justify-end">
+            <Button className="w-full sm:w-auto" type="button" onClick={() => setErrorOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -295,7 +295,7 @@ export function ImportExportPanel({
 
 function SummaryItem({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border p-3 text-center">
+    <div className="min-w-0 rounded-lg border p-3 text-center">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-lg font-semibold">{value}</p>
     </div>

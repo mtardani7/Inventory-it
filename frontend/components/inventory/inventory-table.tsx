@@ -191,9 +191,9 @@ function InventoryTableComponent({
   }
 
   return (
-    <div className="rounded-lg border bg-background">
-      <div className="overflow-y-auto" style={{ maxHeight: `${MAX_BODY_HEIGHT}px` }}>
-        <Table>
+    <div className="w-full min-w-0 overflow-hidden rounded-lg border bg-background">
+      <div className="overflow-x-auto overflow-y-auto" style={{ maxHeight: `${MAX_BODY_HEIGHT}px` }}>
+        <Table className="min-w-[760px] w-full">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="bg-muted/60 hover:bg-muted/60">

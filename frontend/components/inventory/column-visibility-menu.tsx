@@ -34,7 +34,6 @@ export function ColumnVisibilityMenu({ columns, visibility, onChange }: ColumnVi
 
   return (
     <DropdownMenu>
-      {/* Use trigger without asChild and render styled content so the MenuPrimitive renders a single <button> */}
       <DropdownMenuTrigger>
         <span className={cn(buttonVariants({ variant: "outline", size: "sm" }), "inline-flex items-center gap-2")}> 
           <List />

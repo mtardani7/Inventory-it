@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, LogOut, User } from "lucide-react";
+import { Menu, LogOut, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,7 +11,12 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { useLogout } from "@/hooks/use-auth";
 import { useAuthContext } from "@/providers/auth-provider";
 
-export function AppHeader() {
+interface AppHeaderProps {
+  sidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
+}
+
+export function AppHeader({ sidebarCollapsed = false, onToggleSidebar }: AppHeaderProps) {
   const { user } = useAuthContext();
   const logout = useLogout();
   const router = useRouter();
@@ -20,6 +25,18 @@ export function AppHeader() {
   return (
     <header className="flex h-16 items-center justify-between border-b px-3 sm:px-4">
       <div className="flex items-center gap-2">
+        {onToggleSidebar ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="hidden h-9 w-9 rounded-full border-border/70 bg-background/80 shadow-sm md:inline-flex"
+            onClick={onToggleSidebar}
+            aria-label={sidebarCollapsed ? "Buka sidebar" : "Sembunyikan sidebar"}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+          </Button>
+        ) : null}
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               render={

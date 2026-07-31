@@ -37,9 +37,9 @@ export function InventoryToolbar({
   status,
 }: InventoryToolbarProps) {
   return (
-    <div className="flex flex-col gap-3 border-y bg-background py-4 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap lg:items-center">
-        <div className="relative w-full sm:max-w-sm">
+    <div className="flex flex-col gap-3 border-y bg-background px-2 py-4 sm:px-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap lg:items-center">
+        <div className="relative w-full min-w-0 sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
@@ -50,7 +50,7 @@ export function InventoryToolbar({
         </div>
 
         <Select value={plant} onValueChange={(value) => onPlantChange(value ?? "all")}>
-          <SelectTrigger className="w-full sm:w-40 lg:w-44">
+          <SelectTrigger className="w-full min-w-0 sm:w-40 lg:w-44">
             <SelectValue placeholder="Plant" />
           </SelectTrigger>
           <SelectContent>
@@ -64,7 +64,7 @@ export function InventoryToolbar({
         </Select>
 
         <Select value={status} onValueChange={(value) => onStatusChange(value ?? "all")}>
-          <SelectTrigger className="w-full sm:w-40 lg:w-44">
+          <SelectTrigger className="w-full min-w-0 sm:w-40 lg:w-44">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -80,6 +80,7 @@ export function InventoryToolbar({
 
       <div className="flex flex-wrap gap-2">
         <Button
+          className="w-full justify-center sm:w-auto"
           type="button"
           variant="outline"
           disabled={isRefreshing}
@@ -89,7 +90,7 @@ export function InventoryToolbar({
           Refresh
         </Button>
 
-        <Button type="button" onClick={onAdd}>
+        <Button className="w-full justify-center sm:w-auto" type="button" onClick={onAdd}>
           <Plus />
           Tambah Asset
         </Button>
