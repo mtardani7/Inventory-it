@@ -8,10 +8,6 @@ const PUBLIC_ROUTES = [
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname === "/inventory" || pathname.startsWith("/inventory/")) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
   if (
     PUBLIC_ROUTES.includes(pathname) ||
     pathname.startsWith("/_next") ||
